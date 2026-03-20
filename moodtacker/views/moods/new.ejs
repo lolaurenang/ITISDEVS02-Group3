@@ -1,0 +1,244 @@
+<%- include('../partials/header') %>
+
+<div class="child-page">
+
+  <!-- Step 1: Pick an Emotion -->
+  <div class="step" id="step-emotion">
+    <h1 class="child-title">How are you feeling?</h1>
+    <p class="child-sub">Tap the face that matches!</p>
+
+    <div class="emotion-grid">
+      <button class="emo-btn" data-emotion="Happiness" onclick="pickEmotion(this)">
+        <span class="emo-face">😄</span>
+        <span class="emo-name">Happy</span>
+      </button>
+      <button class="emo-btn" data-emotion="Sadness" onclick="pickEmotion(this)">
+        <span class="emo-face">😢</span>
+        <span class="emo-name">Sad</span>
+      </button>
+      <button class="emo-btn" data-emotion="Anger" onclick="pickEmotion(this)">
+        <span class="emo-face">😠</span>
+        <span class="emo-name">Angry</span>
+      </button>
+      <button class="emo-btn" data-emotion="Fear" onclick="pickEmotion(this)">
+        <span class="emo-face">😨</span>
+        <span class="emo-name">Scared</span>
+      </button>
+      <button class="emo-btn" data-emotion="Surprise" onclick="pickEmotion(this)">
+        <span class="emo-face">😲</span>
+        <span class="emo-name">Surprised</span>
+      </button>
+      <button class="emo-btn" data-emotion="Disgust" onclick="pickEmotion(this)">
+        <span class="emo-face">🤢</span>
+        <span class="emo-name">Disgusted</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2: Intensity -->
+  <div class="step hidden" id="step-intensity">
+    <button class="back-btn" onclick="goBack('step-emotion', 'step-intensity')">← Back</button>
+    <h1 class="child-title">How <span id="intensity-emotion-label">?</span> are you?</h1>
+    <p class="child-sub">Slide to show how strong the feeling is</p>
+
+    <div class="intensity-faces" id="intensityFaces"></div>
+
+    <div class="slider-wrap">
+      <input type="range" id="intensitySlider" min="1" max="10" value="5"
+             oninput="updateIntensity(this.value)" />
+      <div class="slider-labels">
+        <span>A little</span>
+        <span>Medium</span>
+        <span>A lot!</span>
+      </div>
+    </div>
+
+    <div class="intensity-number-wrap">
+      <span class="intensity-number" id="intensityNumber">5</span>
+      <span class="intensity-number-label">/ 10</span>
+    </div>
+
+    <button class="next-btn" id="nextToTrigger" onclick="goToTrigger()">Next →</button>
+  </div>
+
+  <!-- Step 3: Triggers -->
+  <div class="step hidden" id="step-trigger">
+    <button class="back-btn" onclick="goBack('step-intensity', 'step-trigger')">← Back</button>
+    <h1 class="child-title">What happened?</h1>
+    <p class="child-sub">Tap everything that caused this feeling</p>
+
+    <div class="trigger-grid">
+      <button class="trigger-chip" data-trigger="Loud noises"       onclick="toggleTrigger(this)">🔊 Loud noises</button>
+      <button class="trigger-chip" data-trigger="Bright lights"     onclick="toggleTrigger(this)">💡 Bright lights</button>
+      <button class="trigger-chip" data-trigger="Change in routine" onclick="toggleTrigger(this)">🔄 Change in routine</button>
+      <button class="trigger-chip" data-trigger="Crowded place"     onclick="toggleTrigger(this)">👥 Crowded place</button>
+      <button class="trigger-chip" data-trigger="Feeling hungry"    onclick="toggleTrigger(this)">🍽️ Feeling hungry</button>
+      <button class="trigger-chip" data-trigger="Feeling tired"     onclick="toggleTrigger(this)">😴 Feeling tired</button>
+      <button class="trigger-chip" data-trigger="Someone was mean"  onclick="toggleTrigger(this)">😤 Someone was mean</button>
+      <button class="trigger-chip" data-trigger="Didn't understand" onclick="toggleTrigger(this)">❓ Didn't understand</button>
+      <button class="trigger-chip" data-trigger="Lost a game"       onclick="toggleTrigger(this)">🎮 Lost a game</button>
+      <button class="trigger-chip" data-trigger="Missed someone"    onclick="toggleTrigger(this)">💔 Missed someone</button>
+      <button class="trigger-chip" data-trigger="Unexpected event"  onclick="toggleTrigger(this)">⚡ Unexpected event</button>
+      <button class="trigger-chip" data-trigger="Physical pain"     onclick="toggleTrigger(this)">🤕 Physical pain</button>
+      <button class="trigger-chip" data-trigger="Too much work"     onclick="toggleTrigger(this)">📚 Too much work</button>
+      <button class="trigger-chip" data-trigger="Something fun"     onclick="toggleTrigger(this)">🎉 Something fun</button>
+      <button class="trigger-chip" data-trigger="Got a surprise"    onclick="toggleTrigger(this)">🎁 Got a surprise</button>
+      <button class="trigger-chip" data-trigger="Other"             onclick="toggleTrigger(this)">✏️ Other</button>
+    </div>
+
+    <button class="next-btn" onclick="goToConfirm()">Next →</button>
+  </div>
+
+  <!-- Step 4: Confirm & Submit -->
+  <div class="step hidden" id="step-confirm">
+    <button class="back-btn" onclick="goBack('step-trigger', 'step-confirm')">← Back</button>
+    <h1 class="child-title">All done! 🎉</h1>
+    <p class="child-sub">Here's what you told us:</p>
+
+    <div class="summary-card" id="summaryCard">
+      <div class="summary-row">
+        <span class="summary-icon" id="summaryFace"></span>
+        <div>
+          <div class="summary-label">Feeling</div>
+          <div class="summary-value" id="summaryEmotion"></div>
+        </div>
+      </div>
+      <div class="summary-row">
+        <span class="summary-icon">🌡️</span>
+        <div>
+          <div class="summary-label">Intensity</div>
+          <div class="summary-value" id="summaryIntensity"></div>
+        </div>
+      </div>
+      <div class="summary-row">
+        <span class="summary-icon">⚡</span>
+        <div>
+          <div class="summary-label">Triggers</div>
+          <div class="summary-value" id="summaryTriggers"></div>
+        </div>
+      </div>
+    </div>
+
+    <form method="POST" action="/moods" id="moodForm">
+      <input type="hidden" name="childName"         id="f_childName"   value="Child" />
+      <input type="hidden" name="emotion"            id="f_emotion" />
+      <input type="hidden" name="intensity"          id="f_intensity" />
+      <input type="hidden" name="triggerDescription" id="f_trigger" />
+      <input type="hidden" name="recordedBy"         value="Caretaker" />
+      <input type="hidden" name="occurredAt"         id="f_occurredAt" />
+      <button class="next-btn submit-btn" type="submit">✅ Save My Mood</button>
+    </form>
+  </div>
+
+</div>
+
+<script>
+  const EMOTIONS = {
+    Happiness: { emoji:'😄', label:'happy',      color:'#FBBF24', bg:'#FEF9C3' },
+    Sadness:   { emoji:'😢', label:'sad',        color:'#60A5FA', bg:'#DBEAFE' },
+    Anger:     { emoji:'😠', label:'angry',      color:'#F87171', bg:'#FEE2E2' },
+    Fear:      { emoji:'😨', label:'scared',     color:'#A78BFA', bg:'#EDE9FE' },
+    Surprise:  { emoji:'😲', label:'surprised',  color:'#34D399', bg:'#D1FAE5' },
+    Disgust:   { emoji:'🤢', label:'disgusted',  color:'#6EE7B7', bg:'#ECFDF5' },
+  };
+
+  const INTENSITY_FACES = {
+    Happiness: ['🙂','😊','😄','😁','🤩'],
+    Sadness:   ['😕','😔','😢','😭','💔'],
+    Anger:     ['😒','😤','😠','😡','🤬'],
+    Fear:      ['😟','😰','😨','😱','🫨'],
+    Surprise:  ['🤔','😮','😲','🤯','😵'],
+    Disgust:   ['😑','😣','🤢','🤮','💀'],
+  };
+
+  let selectedEmotion  = '';
+  let selectedIntensity = 5;
+  let selectedTriggers  = [];
+
+  function show(id) { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id) { document.getElementById(id).classList.add('hidden'); }
+  function goBack(showStep, hideStep) { hide(hideStep); show(showStep); }
+
+  function pickEmotion(btn) {
+    selectedEmotion = btn.dataset.emotion;
+    const emo = EMOTIONS[selectedEmotion];
+
+    document.getElementById('intensity-emotion-label').textContent = emo.label;
+    document.getElementById('intensity-emotion-label').style.color = emo.color;
+    document.getElementById('nextToTrigger').style.background = emo.color;
+
+    // Build face scale
+    const faces = INTENSITY_FACES[selectedEmotion];
+    document.getElementById('intensityFaces').innerHTML = faces.map((f, i) =>
+      `<span class="int-face" id="iface${i}">${f}</span>`
+    ).join('');
+
+    document.querySelectorAll('.emo-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    btn.style.borderColor = emo.color;
+    btn.style.background  = emo.bg;
+
+    hide('step-emotion');
+    show('step-intensity');
+    document.getElementById('intensitySlider').value = 5;
+    updateIntensity(5);
+  }
+
+  function updateIntensity(val) {
+    selectedIntensity = parseInt(val);
+    const emo = EMOTIONS[selectedEmotion];
+    document.getElementById('intensityNumber').textContent = val;
+    document.getElementById('intensityNumber').style.color = emo.color;
+
+    const faceIdx = Math.min(4, Math.floor((val - 1) / 2));
+    for (let i = 0; i < 5; i++) {
+      const el = document.getElementById('iface' + i);
+      if (!el) continue;
+      const active = i === faceIdx;
+      el.style.opacity   = i <= faceIdx ? '1' : '0.25';
+      el.style.fontSize  = active ? `${2.2 + i * 0.2}rem` : `${1.2 + i * 0.15}rem`;
+      el.style.transform = active ? 'scale(1.35) translateY(-4px)' : 'scale(1)';
+      el.style.filter    = active ? `drop-shadow(0 4px 8px ${emo.color}88)` : 'none';
+    }
+
+    const pct = ((val - 1) / 9) * 100;
+    document.getElementById('intensitySlider').style.background =
+      `linear-gradient(to right, ${emo.color} ${pct}%, #e5e7eb ${pct}%)`;
+  }
+
+  function goToTrigger() { hide('step-intensity'); show('step-trigger'); }
+
+  function toggleTrigger(btn) {
+    const t = btn.dataset.trigger;
+    if (selectedTriggers.includes(t)) {
+      selectedTriggers = selectedTriggers.filter(x => x !== t);
+      btn.classList.remove('selected');
+    } else {
+      selectedTriggers.push(t);
+      btn.classList.add('selected');
+    }
+  }
+
+  function goToConfirm() {
+    const emo = EMOTIONS[selectedEmotion];
+    document.getElementById('summaryFace').textContent     = emo.emoji;
+    document.getElementById('summaryEmotion').textContent  = selectedEmotion;
+    document.getElementById('summaryIntensity').textContent= `${selectedIntensity} / 10`;
+    document.getElementById('summaryTriggers').textContent =
+      selectedTriggers.length ? selectedTriggers.join(', ') : 'None selected';
+
+    const card = document.getElementById('summaryCard');
+    card.style.borderColor = emo.color;
+    card.style.background  = emo.bg;
+
+    document.getElementById('f_emotion').value   = selectedEmotion;
+    document.getElementById('f_intensity').value = selectedIntensity;
+    document.getElementById('f_trigger').value   = selectedTriggers.join(', ');
+    document.getElementById('f_occurredAt').value= new Date().toISOString();
+
+    hide('step-trigger');
+    show('step-confirm');
+  }
+</script>
+
+<%- include('../partials/footer') %>

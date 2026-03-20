@@ -1,0 +1,75 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Mood History</h1>
+    <p class="page-subtitle">Tracking emotional patterns for better care decisions</p>
+  </div>
+  <a href="/moods/new" class="btn btn-primary">+ Log New Mood</a>
+</div>
+
+<!-- Filter Bar -->
+<form class="filter-bar" method="GET" action="/moods">
+  <input class="filter-input" type="text" name="childName"
+         placeholder="🔍 Search child name..." value="<%= query.childName || '' %>"/>
+  <input class="filter-input" type="text" name="emotion"
+         placeholder="😊 Filter by emotion..." value="<%= query.emotion || '' %>"/>
+  <select class="filter-input" name="recordedBy">
+    <option value="">👤 All recorders</option>
+    <option value="Parent"    <%= query.recordedBy === 'Parent'    ? 'selected' : '' %>>Parent</option>
+    <option value="Caretaker" <%= query.recordedBy === 'Caretaker' ? 'selected' : '' %>>Caretaker</option>
+  </select>
+  <button class="btn btn-secondary" type="submit">Filter</button>
+  <a class="btn btn-ghost" href="/moods">Clear</a>
+</form>
+
+<!-- Mood Timeline -->
+<% if (moods.length === 0) { %>
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h2>No mood entries yet</h2>
+    <p>Start by logging a mood entry for a child.</p>
+    <a href="/moods/new" class="btn btn-primary">Log First Mood</a>
+  </div>
+<% } else { %>
+  <div class="timeline">
+    <% moods.forEach(mood => { %>
+      <%
+        const intensity = mood.intensity;
+        let intensityClass = 'low';
+        if (intensity >= 8) intensityClass = 'critical';
+        else if (intensity >= 6) intensityClass = 'warning';
+        else if (intensity >= 4) intensityClass = 'moderate';
+      %>
+      <div class="timeline-card intensity-<%= intensityClass %>">
+        <div class="card-left">
+          <div class="emotion-badge"><%= mood.emotion %></div>
+          <div class="intensity-bar-wrap">
+            <div class="intensity-bar" style="width: <%= mood.intensity * 10 %>%"></div>
+          </div>
+          <span class="intensity-label">Intensity: <strong><%= mood.intensity %>/10</strong></span>
+        </div>
+        <div class="card-body">
+          <div class="card-child">👦 <%= mood.childName %></div>
+          <% if (mood.triggerDescription) { %>
+            <p class="card-trigger">💬 "<%= mood.triggerDescription %>"</p>
+          <% } %>
+          <div class="card-meta">
+            <span>🕐 <%= new Date(mood.occurredAt).toLocaleString() %></span>
+            <span>📝 Logged by: <%= mood.recordedBy %></span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="/moods/<%= mood._id %>" class="btn btn-xs btn-ghost">View</a>
+          <a href="/moods/<%= mood._id %>/edit" class="btn btn-xs btn-secondary">Edit</a>
+          <form method="POST" action="/moods/<%= mood._id %>?_method=DELETE"
+                onsubmit="return confirm('Delete this entry?')">
+            <button class="btn btn-xs btn-danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

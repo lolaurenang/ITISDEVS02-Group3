@@ -1,0 +1,68 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Mood Entry</h1>
+    <p class="page-subtitle">Recorded on <%= new Date(mood.occurredAt).toLocaleDateString('en-PH', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) %></p>
+  </div>
+  <div class="header-actions">
+    <a href="/moods/<%= mood._id %>/edit" class="btn btn-secondary">✏️ Edit</a>
+    <a href="/moods" class="btn btn-ghost">← Back</a>
+  </div>
+</div>
+
+<!-- Escalation Alert Banner -->
+<% if (alert.level === 'critical') { %>
+  <div class="alert alert-critical">
+    🚨 <strong>Support Escalation Alert:</strong> Intensity <%= mood.intensity %>/10 — <%= alert.label %>. Consider immediate intervention.
+  </div>
+<% } else if (alert.level === 'warning') { %>
+  <div class="alert alert-warning">
+    ⚠️ <strong>Monitor Closely:</strong> Intensity <%= mood.intensity %>/10 — <%= alert.label %>.
+  </div>
+<% } %>
+
+<div class="detail-grid">
+  <!-- Main Info -->
+  <div class="detail-card detail-main">
+    <div class="detail-emotion"><%= mood.emotion %></div>
+    <div class="detail-child">👦 <%= mood.childName %></div>
+
+    <div class="detail-intensity-wrap">
+      <span class="detail-label">Intensity</span>
+      <div class="detail-intensity-bar-bg">
+        <div class="detail-intensity-bar" style="width:<%= mood.intensity * 10 %>%"></div>
+      </div>
+      <span class="detail-intensity-num"><%= mood.intensity %>/10</span>
+    </div>
+
+    <% if (mood.triggerDescription) { %>
+      <div class="detail-section">
+        <span class="detail-label">💬 Trigger Description</span>
+        <p class="detail-text"><%= mood.triggerDescription %></p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Meta Info -->
+  <div class="detail-card detail-meta">
+    <h3 class="detail-meta-title">Entry Details</h3>
+    <div class="meta-row"><span>📝 Recorded by</span><strong><%= mood.recordedBy %></strong></div>
+    <div class="meta-row"><span>🕐 Occurred at</span><strong><%= new Date(mood.occurredAt).toLocaleString() %></strong></div>
+    <div class="meta-row"><span>📅 Logged at</span><strong><%= new Date(mood.createdAt).toLocaleString() %></strong></div>
+    <div class="meta-row">
+      <span>🚦 Alert Level</span>
+      <strong style="color:<%= alert.color %>"><%= alert.label %></strong>
+    </div>
+
+    <div class="detail-actions">
+      <a href="/moods/<%= mood._id %>/edit" class="btn btn-secondary btn-full">✏️ Edit Entry</a>
+      <form method="POST" action="/moods/<%= mood._id %>?_method=DELETE"
+            onsubmit="return confirm('Delete this entry permanently?')">
+        <button class="btn btn-danger btn-full" type="submit">🗑️ Delete Entry</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

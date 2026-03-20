@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Edit Mood Entry</h1>
+    <p class="page-subtitle">Update the recorded emotional data</p>
+  </div>
+  <a href="/moods/<%= mood._id %>" class="btn btn-ghost">← Cancel</a>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert-error">⚠️ <%= error %></div>
+<% } %>
+
+<div class="form-card">
+  <form method="POST" action="/moods/<%= mood._id %>?_method=PUT">
+
+    <div class="form-group">
+      <label class="form-label">👦 Child's Name</label>
+      <input class="form-input" type="text" name="childName"
+             value="<%= mood.childName %>" required />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">😊 Emotion</label>
+      <input class="form-input" type="text" name="emotion"
+             value="<%= mood.emotion %>" required />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">
+        🌡️ Intensity
+        <span class="intensity-display" id="intensityDisplay"><%= mood.intensity %></span>/10
+      </label>
+      <input class="intensity-slider" type="range" name="intensity"
+             id="intensitySlider" min="1" max="10" value="<%= mood.intensity %>" required />
+      <div class="intensity-labels">
+        <span>Mild</span><span>Moderate</span><span>Severe</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">💬 Trigger Description</label>
+      <textarea class="form-input form-textarea" name="triggerDescription"
+                ><%= mood.triggerDescription %></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📝 Recorded By</label>
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" name="recordedBy" value="Parent"
+                 <%= mood.recordedBy === 'Parent' ? 'checked' : '' %> /> Parent
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="recordedBy" value="Caretaker"
+                 <%= mood.recordedBy === 'Caretaker' ? 'checked' : '' %> /> Caretaker
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">🕐 Date & Time Occurred</label>
+      <input class="form-input" type="datetime-local" name="occurredAt"
+             value="<%= new Date(mood.occurredAt).toISOString().slice(0,16) %>" />
+    </div>
+
+    <div class="form-actions">
+      <a href="/moods/<%= mood._id %>" class="btn btn-ghost">Cancel</a>
+      <button class="btn btn-primary" type="submit">💾 Save Changes</button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  const slider = document.getElementById('intensitySlider');
+  const display = document.getElementById('intensityDisplay');
+  slider.addEventListener('input', () => { display.textContent = slider.value; });
+</script>
+
+<%- include('../partials/footer') %>
