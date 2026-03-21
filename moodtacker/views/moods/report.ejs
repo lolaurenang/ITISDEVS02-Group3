@@ -5,16 +5,21 @@
 <div class="page-header">
   <div>
     <h1 class="page-title">📊 MIS Decision Report</h1>
-    <p class="page-subtitle">Emotion trends and support escalation analysis</p>
+    <p class="page-subtitle">Emotion trends, heatmap analysis & support escalation</p>
   </div>
-  <a href="/moods" class="btn btn-ghost">← Back to History</a>
+  <div style="display:flex;gap:.75rem;align-items:center;">
+    <a href="/test-email" target="_blank" class="btn btn-secondary" title="Test daily reminder email">
+      📧 Test Email Reminder
+    </a>
+    <a href="/moods" class="btn btn-ghost">← Back</a>
+  </div>
 </div>
 
-<!-- ── Decision 2: Support Escalation Alerts ──────────────────────────────── -->
+<!-- ── Escalation Alerts ──────────────────────────────────────────────────── -->
 <% if (escalationAlerts.length > 0) { %>
   <section class="report-section">
     <h2 class="section-title critical-title">🚨 Support Escalation Alerts</h2>
-    <p class="section-desc">Children with 2 or more high-intensity (≥7) episodes in the past 7 days:</p>
+    <p class="section-desc">Children with 2+ high-intensity (≥7) episodes in the past 7 days:</p>
     <div class="escalation-grid">
       <% escalationAlerts.forEach(a => { %>
         <div class="escalation-card">
@@ -26,7 +31,7 @@
     </div>
   </section>
 <% } else { %>
-  <div class="alert alert-success">✅ No escalation alerts — no children flagged for high-intensity recurring distress this week.</div>
+  <div class="alert alert-success">✅ No escalation alerts this week.</div>
 <% } %>
 
 <!-- ── Summary Stats ──────────────────────────────────────────────────────── -->
@@ -41,7 +46,7 @@
   </div>
   <div class="stat-card">
     <div class="stat-number"><%= recentHighIntensity.length %></div>
-    <div class="stat-label">High-Intensity (Last 7 Days)</div>
+    <div class="stat-label">High-Intensity (7 Days)</div>
   </div>
   <div class="stat-card">
     <div class="stat-number"><%= escalationAlerts.length %></div>
@@ -49,17 +54,49 @@
   </div>
 </div>
 
-<!-- ── Decision 1: Report Generation — Charts ────────────────────────────── -->
+<!-- ── Row 1: Pie Chart + Bar Chart ──────────────────────────────────────── -->
 <section class="report-section">
-  <h2 class="section-title">📈 Emotion Frequency & Average Intensity</h2>
+  <h2 class="section-title">📈 Emotion Frequency & Distribution</h2>
   <div class="chart-grid">
+
+    <!-- PIE CHART -->
     <div class="chart-box">
-      <h3>Emotion Frequency</h3>
+      <h3>🥧 Emotion Share (Pie Chart)</h3>
+      <div style="position:relative;height:260px;display:flex;align-items:center;justify-content:center;">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+    <!-- BAR CHART -->
+    <div class="chart-box">
+      <h3>📊 Frequency Count</h3>
       <canvas id="freqChart"></canvas>
     </div>
+
+  </div>
+</section>
+
+<!-- ── Row 2: Average Intensity Line + Heatmap ───────────────────────────── -->
+<section class="report-section">
+  <h2 class="section-title">🌡️ Intensity Analysis</h2>
+  <div class="chart-grid" style="grid-template-columns:1fr;">
+
+    <!-- AVG INTENSITY LINE -->
     <div class="chart-box">
       <h3>Average Intensity by Emotion</h3>
-      <canvas id="intensityChart"></canvas>
+      <canvas id="intensityChart" style="max-height:200px;"></canvas>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Heatmap: Day × Emotion ─────────────────────────────────────────────── -->
+<section class="report-section">
+  <h2 class="section-title">🗓️ Emotion Heatmap — Last 7 Days</h2>
+  <p class="section-desc">Shows how often each emotion appeared per day. Darker = more frequent.</p>
+  <div class="heatmap-wrap">
+    <div class="heatmap-grid" id="heatmapGrid">
+      <!-- filled by JS -->
     </div>
   </div>
 </section>
@@ -68,25 +105,19 @@
 <section class="report-section">
   <h2 class="section-title">📋 Detailed Emotion Breakdown</h2>
   <% if (emotionStats.length === 0) { %>
-    <p class="empty-text">No data available yet. Start logging moods.</p>
+    <p class="empty-text">No data yet. Start logging moods.</p>
   <% } else { %>
     <table class="report-table">
       <thead>
-        <tr>
-          <th>Emotion</th>
-          <th>Occurrences</th>
-          <th>Avg. Intensity</th>
-          <th>Intensity Level</th>
-        </tr>
+        <tr><th>Emotion</th><th>Count</th><th>Avg Intensity</th><th>Level</th></tr>
       </thead>
       <tbody>
         <% emotionStats.forEach(stat => { %>
           <%
             const avg = parseFloat(stat.avgIntensity);
-            let badge = 'badge-low';
-            let label = 'Low';
-            if (avg >= 7) { badge = 'badge-critical'; label = 'High'; }
-            else if (avg >= 5) { badge = 'badge-warning'; label = 'Moderate'; }
+            let badge = 'badge-low', label='Low';
+            if(avg>=7){badge='badge-critical';label='High';}
+            else if(avg>=5){badge='badge-warning';label='Moderate';}
           %>
           <tr>
             <td><strong><%= stat.emotion %></strong></td>
@@ -102,85 +133,141 @@
 
 <!-- ── Recent High-Intensity Entries ─────────────────────────────────────── -->
 <% if (recentHighIntensity.length > 0) { %>
-  <section class="report-section">
-    <h2 class="section-title">⚠️ Recent High-Intensity Episodes (Last 7 Days)</h2>
-    <div class="timeline">
-      <% recentHighIntensity.forEach(mood => { %>
-        <div class="timeline-card intensity-critical">
-          <div class="card-left">
-            <div class="emotion-badge"><%= mood.emotion %></div>
-            <span class="intensity-label">Intensity: <strong><%= mood.intensity %>/10</strong></span>
-          </div>
-          <div class="card-body">
-            <div class="card-child">👦 <%= mood.childName %></div>
-            <% if (mood.triggerDescription) { %>
-              <p class="card-trigger">💬 "<%= mood.triggerDescription %>"</p>
-            <% } %>
-            <div class="card-meta">
-              <span>🕐 <%= new Date(mood.occurredAt).toLocaleString() %></span>
-              <span>📝 <%= mood.recordedBy %></span>
-            </div>
-          </div>
-          <div class="card-actions">
-            <a href="/moods/<%= mood._id %>" class="btn btn-xs btn-ghost">View</a>
+<section class="report-section">
+  <h2 class="section-title">⚠️ Recent High-Intensity Episodes (Last 7 Days)</h2>
+  <div class="timeline">
+    <% recentHighIntensity.forEach(mood => { %>
+      <div class="timeline-card intensity-critical">
+        <div class="card-left">
+          <div class="emotion-badge"><%= mood.emotion %></div>
+          <span class="intensity-label">Intensity: <strong><%= mood.intensity %>/10</strong></span>
+        </div>
+        <div class="card-body">
+          <div class="card-child">👦 <%= mood.childName %></div>
+          <% if(mood.triggerDescription){ %>
+            <p class="card-trigger">💬 "<%= mood.triggerDescription %>"</p>
+          <% } %>
+          <div class="card-meta">
+            <span>🕐 <%= new Date(mood.occurredAt).toLocaleString() %></span>
+            <span>📝 <%= mood.recordedBy %></span>
           </div>
         </div>
-      <% }) %>
-    </div>
-  </section>
+        <div class="card-actions">
+          <a href="/moods/<%= mood._id %>" class="btn btn-xs btn-ghost">View</a>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
 <% } %>
 
 <script>
-  const chartData = <%- chartData %>;
+const chartData  = <%- chartData %>;
+const heatmapRaw = <%- heatmapData %>;
 
-  const colors = [
-    '#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6',
-    '#ec4899','#14b8a6','#f97316','#8b5cf6','#06b6d4'
-  ];
+const EMO_COLORS = {
+  Happiness: '#FBBF24', Sadness:'#60A5FA', Anger:'#F87171',
+  Fear:'#A78BFA', Surprise:'#34D399', Disgust:'#6EE7B7'
+};
+const PIE_COLORS = chartData.labels.map(l => EMO_COLORS[l] || '#6366f1');
 
-  // Frequency Bar Chart
-  new Chart(document.getElementById('freqChart'), {
-    type: 'bar',
-    data: {
-      labels: chartData.labels,
-      datasets: [{
-        label: 'Times Recorded',
-        data: chartData.counts,
-        backgroundColor: colors.slice(0, chartData.labels.length),
-        borderRadius: 8,
-      }]
+// ── Pie Chart ─────────────────────────────────────────────────────────────
+new Chart(document.getElementById('pieChart'), {
+  type: 'doughnut',
+  data: {
+    labels: chartData.labels,
+    datasets: [{ data: chartData.counts, backgroundColor: PIE_COLORS, borderWidth: 2, borderColor:'#fff' }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position:'right', labels:{ font:{size:12,weight:'bold'}, padding:12 } }
     },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-    }
-  });
+    cutout: '55%'
+  }
+});
 
-  // Avg Intensity Line Chart
-  new Chart(document.getElementById('intensityChart'), {
-    type: 'line',
-    data: {
-      labels: chartData.labels,
-      datasets: [{
-        label: 'Avg Intensity',
-        data: chartData.avgIntensities,
-        borderColor: '#ef4444',
-        backgroundColor: 'rgba(239,68,68,0.1)',
-        borderWidth: 2,
-        tension: 0.4,
-        fill: true,
-        pointBackgroundColor: '#ef4444',
-        pointRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: { min: 0, max: 10, ticks: { stepSize: 2 } }
-      }
-    }
-  });
+// ── Frequency Bar Chart ───────────────────────────────────────────────────
+new Chart(document.getElementById('freqChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: [{
+      label: 'Times Recorded',
+      data: chartData.counts,
+      backgroundColor: PIE_COLORS,
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    responsive:true,
+    plugins:{ legend:{ display:false } },
+    scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1 } } }
+  }
+});
+
+// ── Average Intensity Line Chart ──────────────────────────────────────────
+new Chart(document.getElementById('intensityChart'), {
+  type:'line',
+  data:{
+    labels: chartData.labels,
+    datasets:[{
+      label:'Avg Intensity',
+      data: chartData.avgIntensities,
+      borderColor:'#ef4444',
+      backgroundColor:'rgba(239,68,68,0.08)',
+      borderWidth:2, tension:0.4, fill:true,
+      pointBackgroundColor: PIE_COLORS,
+      pointRadius:7, pointHoverRadius:10
+    }]
+  },
+  options:{
+    responsive:true,
+    scales:{ y:{ min:0, max:10, ticks:{ stepSize:2 } } }
+  }
+});
+
+// ── Heatmap ───────────────────────────────────────────────────────────────
+// heatmapRaw = { "Mon":{ Happiness:2, Anger:1 }, "Tue":{...}, ... }
+const EMOTIONS_ORDER = ['Happiness','Sadness','Anger','Fear','Surprise','Disgust'];
+const DAYS_ORDER     = Object.keys(heatmapRaw);
+
+const grid = document.getElementById('heatmapGrid');
+
+// Find max value for color scaling
+let maxVal = 1;
+DAYS_ORDER.forEach(day =>
+  EMOTIONS_ORDER.forEach(emo => {
+    const v = heatmapRaw[day]?.[emo] || 0;
+    if (v > maxVal) maxVal = v;
+  })
+);
+
+// Header row
+const headerRow = document.createElement('div');
+headerRow.className = 'hm-row';
+headerRow.innerHTML = `<div class="hm-cell hm-label"></div>` +
+  DAYS_ORDER.map(d => `<div class="hm-cell hm-day-label">${d}</div>`).join('');
+grid.appendChild(headerRow);
+
+// Emotion rows
+EMOTIONS_ORDER.forEach(emo => {
+  const row = document.createElement('div');
+  row.className = 'hm-row';
+  const baseColor = EMO_COLORS[emo] || '#6366f1';
+  row.innerHTML = `<div class="hm-cell hm-label">${emo}</div>` +
+    DAYS_ORDER.map(day => {
+      const val = heatmapRaw[day]?.[emo] || 0;
+      const opacity = val === 0 ? 0.07 : 0.15 + (val / maxVal) * 0.85;
+      const bg = val === 0 ? '#f3f4f6' : baseColor;
+      return `<div class="hm-cell hm-data" title="${emo} on ${day}: ${val} entries"
+        style="background:${bg};opacity:${val===0?1:1};filter:opacity(${opacity+0.15});">
+        ${val > 0 ? val : ''}
+      </div>`;
+    }).join('');
+  grid.appendChild(row);
+});
 </script>
 
 <%- include('../partials/footer') %>
