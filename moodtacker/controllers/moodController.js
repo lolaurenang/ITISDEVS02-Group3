@@ -4,7 +4,8 @@
 const Mood = require('../models/Mood');
 const NEGATIVE_EMOTIONS = ['Sadness', 'Anger', 'Fear', 'Disgust'];
 
-function getAlertLevel(intensity) {
+function getAlertLevel(intensity, emotion) {
+  if (!NEGATIVE_EMOTIONS.includes(emotion)) return { level:'normal', label:'Within Normal Range', color:'#10b981' };
   if (intensity >= 8) return { level:'critical', label:'Immediate Attention Required', color:'#ef4444' };
   if (intensity >= 6) return { level:'warning',  label:'Monitor Closely',              color:'#f59e0b' };
   return                      { level:'normal',   label:'Within Normal Range',          color:'#10b981' };
@@ -83,7 +84,7 @@ exports.show = async (req, res) => {
   try {
     const mood = await Mood.findById(req.params.id);
     if (!mood) return res.status(404).render('error',{ message:'Entry not found' });
-    res.render('moods/show',{ mood, alert: getAlertLevel(mood.intensity) });
+    res.render('moods/show',{ mood, alert: getAlertLevel(mood.intensity, mood.emotion) });
   } catch(err) { res.status(500).render('error',{ message:err.message }); }
 };
 
