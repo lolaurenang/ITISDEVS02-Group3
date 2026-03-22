@@ -2,6 +2,7 @@
 // ─── CONTROLLER (C in MVC) ────────────────────────────────────────────────────
 
 const Mood = require('../models/Mood');
+const NEGATIVE_EMOTIONS = ['Sadness', 'Anger', 'Fear', 'Disgust'];
 
 function getAlertLevel(intensity) {
   if (intensity >= 8) return { level:'critical', label:'Immediate Attention Required', color:'#ef4444' };
@@ -135,7 +136,8 @@ exports.report = async (req, res) => {
     // Decision 2: Escalation
     const sevenDaysAgo = new Date(Date.now() - 7*24*60*60*1000);
     const recentHighIntensity = moods.filter(
-      m => m.intensity >= 7 && new Date(m.occurredAt) >= sevenDaysAgo
+      m => m.intensity >= 7 && new Date(m.occurredAt) >= sevenDaysAgo 
+      && NEGATIVE_EMOTIONS.includes(m.emotion)
     );
     const escMap = recentHighIntensity.reduce((acc,m) => {
       acc[m.childName] = (acc[m.childName]||0)+1; return acc;
