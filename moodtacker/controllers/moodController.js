@@ -2,6 +2,7 @@
 // ─── CONTROLLER (C in MVC) ────────────────────────────────────────────────────
 
 const Mood = require('../models/Mood');
+const { sendReportEmail } = require('../utils/mailer');
 const NEGATIVE_EMOTIONS = ['Sadness', 'Anger', 'Fear', 'Disgust'];
 
 function getAlertLevel(intensity, emotion) {
@@ -166,4 +167,47 @@ exports.report = async (req, res) => {
       heatmapData: JSON.stringify(heatmapData)
     });
   } catch(err) { res.status(500).render('error',{ message:err.message }); }
+};
+
+// ── SEND REPORT EMAIL ─────────────────────────────────────────────────────────
+exports.sendReport = async (req, res) => {
+  try {
+    const moods = await Mood.find().sort({ occurredAt:-1 });
+
+    // Gather same data as report view
+    const byEmotion = groupByEmotion(moods);
+    const emotionStats = Object.entries(byEmotion).map(([emotion, data]) => ({
+      emotion,
+      count: data.count,
+      avgIntensity: (data.totalIntensity / data.count).toFixed(1)
+    })).sort((a,b) => b.count - a.count);
+
+    const sevenDaysAgo = new Date(Date.now() - 7*24*60*60*1000);
+    const recentHighIntensity = moods.filter(
+      m => m.intensity >= 7 && new Date(m.occurredAt) >= sevenDaysAgo 
+      && NEGATIVE_EMOTIONS.includes(m.emotion)
+    );
+    const escMap = recentHighIntensity.reduce((acc,m) => {
+      acc[m.childName] = (acc[m.childName]||0)+1; return acc;
+    },{});
+    const escalationAlerts = Object.entries(escMap)
+      .filter(([,c]) => c>=2)
+      .map(([childName,count]) => ({ childName, count }));
+
+    // Send the email
+    const result = await sendReportEmail({
+      emotionStats,
+      escalationAlerts,
+      recentHighIntensity,
+      totalEntries: moods.length
+    });
+
+    if (result.sent) {
+      res.json({ success: true, message: '✅ Report sent to parent email successfully!' });
+    } else {
+      res.status(400).json({ success: false, error: result.error || 'Failed to send report' });
+    }
+  } catch(err) { 
+    res.status(500).json({ success: false, error: err.message }); 
+  }
 };

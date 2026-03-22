@@ -8,6 +8,7 @@ const ctrl    = require('../controllers/moodController');
 
 // Report (place before /:id routes to avoid conflict)
 router.get('/report', ctrl.report);
+router.post('/report/send', ctrl.sendReport);  // Send report to parent email
 
 // CRUD
 router.get('/',           ctrl.index);    // GET  /moods

@@ -8,12 +8,51 @@
     <p class="page-subtitle">Emotion trends, heatmap analysis & support escalation</p>
   </div>
   <div style="display:flex;gap:.75rem;align-items:center;">
+    <button onclick="sendReportToParent()" class="btn btn-primary" title="Send this report to parent email">
+      📨 Send Report to Parent
+    </button>
     <a href="/test-email" target="_blank" class="btn btn-secondary" title="Test daily reminder email">
       📧 Test Email Reminder
     </a>
     <a href="/moods" class="btn btn-ghost">← Back</a>
   </div>
 </div>
+
+<script>
+async function sendReportToParent() {
+  const btn = event.target;
+  const originalText = btn.textContent;
+  
+  try {
+    btn.disabled = true;
+    btn.textContent = '⏳ Sending...';
+    
+    const response = await fetch('/moods/report/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      btn.textContent = '✅ Sent!';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }, 3000);
+      alert('✅ Report sent to parent email successfully!');
+    } else {
+      alert('❌ Failed to send report: ' + (data.error || 'Unknown error'));
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+</script>
 
 <!-- ── Escalation Alerts ──────────────────────────────────────────────────── -->
 <% if (escalationAlerts.length > 0) { %>
