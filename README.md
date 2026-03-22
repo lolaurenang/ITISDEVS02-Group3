@@ -1,4 +1,4 @@
-# ITISDEVS02-Group3
+## ITISDEVS02-Group3
 
 	Speaktrum is a specialized mood board system designed to bridge the communication gap for children on the autism spectrum. By replacing verbal questioning with a friendly digital interface, Speaktrum empowers children to express complex emotions and identify specific sensory triggers. The application makes the emotional check-in process easier through a tap and log system or the camera feature to ensure that even non-verbal or overstimulated users can still communicate their state without the cognitive exhaustion of speech. The project integrates real-time tracking and history insights to support collaborative care amongst children with special needs. By acting as a centralized system, Speaktrum allows parents, teachers, and healthcare specialists to share data and synchronize their support strategies based on the child’s actual needs. 
 
